@@ -13,6 +13,7 @@
 class Empresa : public Entidade
 {
 private:
+public:
 	Empresa() {};
 };
 #endif

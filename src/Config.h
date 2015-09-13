@@ -18,6 +18,10 @@ using namespace std;
 
 #define CONFIG_ARQUIVO_LINHAS 	"arquivoLinhas"
 #define CONFIG_CARREGA_AUTO   	"iniciaAutomatico"
+#define CONFIG_CARREGA_AUTO_LINHAS "carregaAutoLinhas"
+#define CONFIG_CARREGA_AUTO_PONTOS "carregaAutoPontos"
+#define CONFIG_CARREGA_AUTO_CONTORNO "carregaAutoContorno"
+
 #define CONFIG_DIR_PONTOS		"diretorioPontos"
 #define CONFIG_DIR_ROTAS		"diretorioRotas"
 #define CONFIG_DIR_CONTORNOS	"diretorioContornos"
@@ -26,6 +30,7 @@ using namespace std;
 #define CONFIG_DESENHA_CONTORNOS "desenhaContornos"
 #define CONFIG_DESENHA_MAPA		"desenhaMapa"
 #define CONFIG_DESENHA_PONTOS	"desenhaPontos"
+#define CONFIG_DESENHA_VEICULOS	"desenhaVeiculos"
 
 class Config {
 	std::map<std::string, std::string> options;

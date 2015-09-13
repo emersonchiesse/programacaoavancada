@@ -66,7 +66,7 @@ bool Config::getBool(string c, bool b) {
 	string s = get(c);
 
 	if (s.length() == 0)
-		return true;
+		return b;
 	else
 		return atoi (s.c_str());
 }

@@ -12,6 +12,7 @@
 #include "Lista.h"
 #include "Lista2.h"
 #include "PontoLinha.h"
+#include "LocalVeiculo.h"
 
 class Linha : public Entidade
 {
@@ -22,6 +23,7 @@ private:
 	Lista<PontoLinha> pontos;
 	List<PontoLinha> pontos2;
 	List<Coordenada> contorno;
+	List<LocalVeiculo> posicoesVeiculos;
 
 public:
 	Linha (string id,
@@ -39,11 +41,13 @@ public:
 	std::string getCategoria();
 	std::string getCartao();
 
-	bool inserePonto(PontoLinha *p);
 	string listaPontos ();
 	List<PontoLinha>* getPontos();
 	List<Coordenada>* getContorno();
+	List<LocalVeiculo>* getPosicoesVeiculos();
 
+	bool inserePonto(PontoLinha *p);
 	void insereCoordenada (Coordenada c);
+	void inserePosicaoVeiculo (LocalVeiculo *p);
 };
 #endif

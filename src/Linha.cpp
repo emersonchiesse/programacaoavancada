@@ -48,3 +48,10 @@ void Linha::insereCoordenada(Coordenada c) {
 	contorno.insere(c);
 }
 
+List<LocalVeiculo>* Linha::getPosicoesVeiculos() {
+	return &posicoesVeiculos;
+}
+
+void Linha::inserePosicaoVeiculo(LocalVeiculo* p) {
+	posicoesVeiculos.insere(*p);
+}

@@ -23,11 +23,14 @@ void SistemaTransportePublico::Init(config::Config *c,
 	config = c;
 	log = l;
 
-	if (config->get(CONFIG_CARREGA_AUTO)=="1")
+	if (config->getBool(CONFIG_CARREGA_AUTO, false))
 	{
-		carregaLinhas();
-		carregaPontos();
-		carregaContornos();
+		if (config->getBool(CONFIG_CARREGA_AUTO_LINHAS, false))
+			carregaLinhas();
+		if (config->getBool(CONFIG_CARREGA_AUTO_PONTOS, false))
+			carregaPontos();
+		if (config->getBool(CONFIG_CARREGA_AUTO_CONTORNO, false))
+			carregaContornos();
 	}
 }
 
@@ -166,7 +169,7 @@ void SistemaTransportePublico::carregaRotas(string linha, string arquivo) {
 
 		inserePontoLinha (linha, p);
 	}
-	log->LOG("pontos inseridos." );
+	log->LOG("pontos inseridos:"  + convert::intToString(d.Size()));
 }
 
 void SistemaTransportePublico::carregaContornos() {
@@ -263,6 +266,13 @@ void SistemaTransportePublico::carregaContornos(int linha, string arquivo) {
 
 void SistemaTransportePublico::insereContorno(int linha, Coordenada c) {
 	linhas2[linha].insereCoordenada(c);
+}
+
+void SistemaTransportePublico::insereLPosicaoVeiculo(string linha,
+		LocalVeiculo* l) {
+	int ind = procuraLinha(linha);
+	if (ind > 0)
+		linhas2[ind].inserePosicaoVeiculo(l);
 }
 
 //Linha* SistemaTransportePublico::procuraLinha(string id)
@@ -372,7 +382,7 @@ void SistemaTransportePublico::carregaLinhas(string arquivo) {
 
 		insereLinha (l);
 	}
-	log->LOG("linhas inseridas: " );//+ linhas.getTamanho());
+	log->LOG("linhas inseridas: "  + convert::intToString(d.Size()));
 }
 
 void SistemaTransportePublico::carregaPontos() {
@@ -483,12 +493,83 @@ void SistemaTransportePublico::carregaPontos(string linha, string arquivo) {
 				c
 		);
 
-		cout << "ponto: " << d[i][JSON_PONTO_NOME].GetString()
-									<< " lat " << lat
-									<< " lon " << lon
-									<< endl;
+//		log->LOG("ponto: " + d[i][JSON_PONTO_NOME].GetString()
+//									+ " lat " + lat
+//									+ " lon " + lon);
 
 		inserePontoLinha (linha, p);
 	}
-	log->LOG("pontos inseridos." );
+	log->LOG("pontos inseridos:"  + convert::intToString(d.Size()));
+}
+
+void SistemaTransportePublico::carregaVeiculos(string arquivo) {
+
+	// valida parametro
+	if (arquivo.size() == 0)
+		return;
+
+	log->LOG("carregando arquivo de linhas: " + arquivo);
+
+	// verifica se arquivo existe
+	std::ifstream t (arquivo.c_str());
+	if (!t)
+	{
+		log->LOG("arquivo nao existe");
+		return;
+	}
+
+	// extrai data e hora
+	int ind = arquivo.find("--")+2;
+	string data = arquivo.substr(ind, 8);
+//	ind = arquivo.find(".")-6;
+//	string hora = arquivo.substr(ind, 6);
+
+	// transforma arquivo de ifstream para string
+	std::string str;
+	t.seekg(0, std::ios::end);
+	str.reserve(t.tellg());
+	t.seekg(0, std::ios::beg);
+
+	str.assign((std::istreambuf_iterator<char>(t)),
+	            std::istreambuf_iterator<char>());
+
+	// parse de string para JSON
+	Document d;
+	d.Parse(str.c_str());
+	assert(d.IsArray());
+	cout << d.Size() << endl;
+	for (SizeType i = 0; i < d.Size(); i++)
+	{
+		assert(d[i].IsObject());
+		assert(d[i].HasMember(JSON_VEICULO_LINHA));
+		assert(d[i][JSON_VEICULO_LINHA].IsString());
+		assert(d[i].HasMember(JSON_VEICULO_PREFIXO));
+		assert(d[i][JSON_VEICULO_PREFIXO].IsString());
+		assert(d[i].HasMember(JSON_VEICULO_LAT));
+		assert(d[i][JSON_VEICULO_LAT].IsString());
+		assert(d[i].HasMember(JSON_VEICULO_LONG));
+		assert(d[i][JSON_VEICULO_LONG].IsString());
+		assert(d[i].HasMember(JSON_VEICULO_HORA));
+		assert(d[i][JSON_VEICULO_HORA].IsString());
+//		assert(d[i].HasMember(JSON_VEICULO_ADAP));
+//		assert(d[i][JSON_VEICULO_ADAP].IsString());
+
+		string lat = d[i][JSON_PONTO_LATITUDE].GetString();
+		lat[3]='.';
+		string lon = d[i][JSON_PONTO_LONGITUDE].GetString();
+		lon[3]='.';
+
+		Coordenada c (lat, lon);
+
+		LocalVeiculo *l = new LocalVeiculo (
+				d[i][JSON_VEICULO_PREFIXO].GetString(),
+				data,
+				d[i][JSON_VEICULO_HORA].GetString(),
+				c
+				);
+
+		insereLPosicaoVeiculo (d[i][JSON_VEICULO_LINHA].GetString(),
+				l);
+	}
+	log->LOG("posicoes de veiculos inseridas: "  + convert::intToString(d.Size()));
 }

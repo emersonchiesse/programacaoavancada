@@ -15,6 +15,7 @@
 #include "SistemaRastreamentoPassageiro.h"
 #include "Config.h"
 #include "log.h"
+#include "LocalVeiculo.h"
 
 using namespace std;
 
@@ -26,8 +27,10 @@ private:
 	std::vector<Linha> linhas2;
 	Lista<Empresa> empresas;
 	Lista<CartaoUsuario> passageiros;
+
 	CalculoDeRota calculoRota;
 	SistemaRastreamentoPassageiro usuarios;
+
 	config::Config *config;
 	Log *log;
 
@@ -37,13 +40,13 @@ public:
 
 	void carregaLinhas ();
 	void carregaLinhas (string arquivo);
-	void insereLinha(Linha *l);
 	string listaLinhas();
+	void insereLinha(Linha *l);
 
-	void inserePontoLinha (string linha, PontoLinha *p);
 	string listaPontosLinha (string linha);
 	void carregaPontos();
 	void carregaPontos (string linha, string arquivo);
+	void inserePontoLinha (string linha, PontoLinha *p);
 
 	void carregaRotas();
 	void carregaRotas (string linha, string arquivo);
@@ -52,6 +55,12 @@ public:
 	void carregaContornos (int linha, string arquivo);
 	void insereContorno (int linha, Coordenada c);
 
+	void carregaVeiculos(string);
+	void insereLPosicaoVeiculo (string linha, LocalVeiculo* l);
+	List<LocalVeiculo> *getPosicoesVeiculos (string linha){
+		int ind = procuraLinha (linha);
+		return linhas2[ind].getPosicoesVeiculos();
+	}
 	//ListaLinhas * getLinhas();
 	List<Linha>* getLinhas();
 //	Linha* procuraLinha(string id);

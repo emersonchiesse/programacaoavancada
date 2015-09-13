@@ -19,6 +19,7 @@ private:
 
 
 public:
+	Motorista() {};
 	std::string getMatricula();
 
 };

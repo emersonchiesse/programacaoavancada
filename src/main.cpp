@@ -124,6 +124,11 @@ private:
 	SistemaTransportePublico RIT;
 	config::Config config;
 	Log log;
+
+	void desenhaPontos (wxPaintDC *dc, string id);
+	void desenhaContorno (wxPaintDC *dc, string linha);
+	void desenhaVeiculos (wxPaintDC *dc, string id);
+
 };
 
 // ----------------------------------------------------------------------------
@@ -155,7 +160,55 @@ enum
 // ----------------------------------------------------------------------------
 // event tables and other macros for wxWidgets
 // ----------------------------------------------------------------------------
-#define MULTIPLIER 30
+
+void MyFrame::desenhaPontos (wxPaintDC *dc, string id)
+{
+	List<PontoLinha> *pontos = RIT.getPontos(id);
+	if ((pontos != NULL) && pontos->getTamanho() >0)
+	{
+		log.debug("plota pontos da linha: " + id);;
+
+		for (List<PontoLinha>::iterator i = pontos->begin();
+				i != pontos->end(); i++)
+		{
+			PontoLinha p = (PontoLinha)(*i);
+			Coordenada *c = p.getCoordenada();
+			dc->DrawCircle(converteX(c->getLongitude()),
+					converteY(c->getLatitude()), raioPonto);
+		}
+	}
+}
+
+void MyFrame::desenhaContorno (wxPaintDC *dc, string id)
+{
+	List<Coordenada> *contorno = RIT.getContorno(id);
+	if ((contorno != NULL) || contorno->getTamanho() > 0)
+	{
+		for (List<Coordenada>::iterator i = contorno->begin();
+				i != contorno->end(); i++)
+		{
+			Coordenada c = (Coordenada)(*i);
+			dc->DrawPoint(converteX(c.getLongitude()),
+					converteY(c.getLatitude()));
+		}
+	}
+}
+
+void MyFrame::desenhaVeiculos (wxPaintDC *dc, string id)
+{
+	List<LocalVeiculo> *local = RIT.getPosicoesVeiculos(id);
+	if ((local != NULL) || local->getTamanho() > 0)
+	{
+		for (List<LocalVeiculo>::iterator i = local->begin();
+				i != local->end(); i++)
+		{
+			LocalVeiculo l = (LocalVeiculo)(*i);
+			Coordenada *c = l.getCoordenada();
+			dc->DrawPoint(converteX(c->getLongitude()),
+					converteY(c->getLatitude()));
+		}
+	}
+}
 
 // the event tables connect the wxWidgets events with the functions (event
 // handlers) which process them. It can be also done at run-time, but for the
@@ -167,20 +220,17 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
     if (config.getBool(CONFIG_DESENHA_MAPA))
     	dc.DrawBitmap( image, 0, 0, false );
 
+    //wxSize size = GetClientSize();
+    wxColor vermelho (255,0,0);
+    wxColor verde (0,255,0);
+    wxColor azul (0,0,255);
+
+	dc.SetBrush(*wxGREEN_BRUSH); // green filling
+	dc.SetPen( wxPen( vermelho, 1 ) ); // 5-pixels-thick red outline
+
     // plota pontos
     // para todas as linhas (selecionadas)
-//    List<Linha> *linhas = RIT.getLinhas();
-    //ListaLinhas *linhas = RIT.getLinhas();
     vector<Linha> *linhas2 = RIT.getLinhas2();
-
-//    if (linhas == NULL)
-//    	return;
-
-//    for (Lista<Linha>::iterator l= linhas->begin();
-//    		l != linhas->end(); l++)
-
-//    for (int i = 0; i < linhas2.size(); i++)
-
     vector<Linha>::iterator ilinhas;
     for (ilinhas = linhas2->begin(); ilinhas != linhas2->end(); ilinhas++)
     {
@@ -191,57 +241,27 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
     	if (ind < 0)
     		continue;
 
-//    	std::vector<Linha>* linhas2 = RIT.getLinhas2();
-
     	// desenha pontos de onibus
-    	if (config.getBool(CONFIG_DESENHA_PONTOS))
+    	if (config.getBool(CONFIG_DESENHA_PONTOS, true))
     	{
-    		List<PontoLinha> *pontos = RIT.getPontos(id);
-    		if ((pontos == NULL) || pontos->getTamanho()==0)
-    			continue;
-
-    		log.debug("plota pontos da linha: " + id);;
-
-    		for (List<PontoLinha>::iterator i = pontos->begin();
-    				i != pontos->end(); i++)
-    		{
-    			PontoLinha p = (PontoLinha)(*i);
-    			Coordenada *c = p.getCoordenada();
-    			dc.DrawCircle(converteX(c->getLongitude()),
-    					converteY(c->getLatitude()), raioPonto);
-    		}
+    		dc.SetPen( wxPen( vermelho, 1 ) );
+    		desenhaPontos (&dc, id);
     	}
 
-    	// deesnha contorno
-		if (config.getBool(CONFIG_DESENHA_CONTORNOS))
+    	// desenha contorno
+		if (config.getBool(CONFIG_DESENHA_CONTORNOS, true))
 		{
-			List<Coordenada> *contorno = RIT.getContorno(id);
-			if ((contorno == NULL) || contorno->getTamanho()==0)
-						continue;
+			dc.SetPen( wxPen( verde, 1 ) );
+			desenhaContorno (&dc, id);
+		}
 
-			for (List<Coordenada>::iterator i = contorno->begin();
-					i != contorno->end(); i++)
-			{
-				Coordenada c = (Coordenada)(*i);
-				dc.DrawPoint(converteX(c.getLongitude()),
-						converteY(c.getLatitude()));
-			}
+		// desenha posicoes de veiculos
+		if (config.getBool(CONFIG_DESENHA_VEICULOS, true))
+		{
+			dc.SetPen( wxPen( azul, 1 ) );
+			desenhaVeiculos (&dc, id);
 		}
     }
-
-
-    //wxSize size = GetClientSize();
-    // escolhe cor
-	if (true)
-	{
-		dc.SetBrush(*wxGREEN_BRUSH); // green filling
-		dc.SetPen( wxPen( wxColor(255,0,0), 1 ) ); // 5-pixels-thick red outline
-	}
-//	else
-//	{
-//		dc.SetBrush(*wxBLACK_BRUSH);
-//		dc.SetPen( wxPen( wxColor(255,0,0), 1 ) );
-//	}
 }
 
 inline void MyFrame::OnRotasAbreArquivo(wxCommandEvent& event) {
@@ -267,10 +287,12 @@ inline void MyFrame::OnOnibusAbreArquivo(wxCommandEvent& event) {
 	wxFileDialog * openFileDialog = new wxFileDialog(this);
 	if (openFileDialog->ShowModal() == wxID_OK){
 
-	    wxString fileName = openFileDialog->GetPath();
-	    //grafo.load(string(fileName.ToAscii()));
-	    this->Refresh(true);
-	    this->Update();
+		wxString fileName = openFileDialog->GetPath();
+
+		RIT.carregaVeiculos(string(fileName.ToAscii()));
+
+		this->Refresh(true);
+		this->Update();
 	}
 }
 
@@ -317,7 +339,6 @@ void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
 			this->Refresh(true);
 			this->Update();
 		}
-
 	}
 }
 
@@ -332,6 +353,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	EVT_MENU(menu_FileOpen,  MyFrame::OnOpen)
 	EVT_MENU(menuArquivoLinhas,  MyFrame::OnLinhasAbreArquivo)
 	EVT_MENU(menuArquivoPontos,  MyFrame::OnPontosAbreArquivo)
+	EVT_MENU(menuArquivoVeiculos,  MyFrame::OnOnibusAbreArquivo)
 	EVT_MENU(menuLinhasLista,  MyFrame::OnLinhasMostraLista)
 	EVT_MENU(menuConfiguracoes,  MyFrame::OnConfiguracoes)
 	EVT_MENU(menuCarregaTudo,  MyFrame::OnCarregaTudo)
@@ -406,6 +428,7 @@ MyFrame::MyFrame(const wxString& title)
 	fileMenu->Append(menuArquivoPontos, _T("Carrega pontos..."), _T(""));
 	fileMenu->Append(menuArquivoRotas, _T("Carrega rotas..."), _T(""));
     fileMenu->Append(menuArquivoHorarios, _T("Carrega horarios..."), _T(""));
+    fileMenu->Append(menuArquivoVeiculos, _T("Carrega veiculos..."), _T(""));
     fileMenu->Append(menuSair, _T("E&ncerra\tAlt-X"), _T("Encerra este programa"));
 
     menuLinhas->Append(menuLinhasLista, _T("lista as linhas..."), _T(""));
@@ -495,13 +518,11 @@ void MyFrame::OnLinhasAbreArquivo(wxCommandEvent& event) {
 
 	    wxString fileName = openFileDialog->GetPath();
 
-		    LinhasDialog dialog ( this, -1, _(""),
-		    		string(fileName.ToAscii()),
-					wxPoint(100, 100), wxSize(400, 400) );
-			if ( dialog.ShowModal() == wxID_OK )
-			{
-				RIT.carregaLinhas(string(fileName.ToAscii()));
-			}
+	    LinhasDialog dialog ( this, -1, _(""),
+	    		string(fileName.ToAscii()),
+				wxPoint(100, 100), wxSize(400, 400) );
+	    if ( dialog.ShowModal() == wxID_OK )
+	    	RIT.carregaLinhas(string(fileName.ToAscii()));
 	}
 }
 

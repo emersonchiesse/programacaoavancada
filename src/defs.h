@@ -23,6 +23,14 @@
 #define JSON_PONTO_SENTIDO				"SENTIDO"
 #define JSON_PONTO_SEQUENCIA			"SEQ"
 
+#define JSON_VEICULO_LINHA 				"LINHA"
+#define JSON_VEICULO_PREFIXO 			"PREFIXO"
+#define JSON_VEICULO_LAT 				"LAT"
+#define JSON_VEICULO_LONG 				"LON"
+#define JSON_VEICULO_HORA 				"HORA"
+#define JSON_VEICULO_ADAP 				"ADAPT"
+
+
 
 
 #endif /* DEFS_H_ */

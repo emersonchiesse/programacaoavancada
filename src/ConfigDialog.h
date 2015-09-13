@@ -36,6 +36,7 @@ private:
 	wxTextCtrl * showPesosText;
 	wxCheckBox * chkDesenhaPontos;
 	wxCheckBox * chkDesenhaContornos;
+	wxCheckBox * chkDesenhaMapa;
 
 	DECLARE_EVENT_TABLE()
 };
