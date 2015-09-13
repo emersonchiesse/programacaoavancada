@@ -24,6 +24,8 @@ using namespace std;
 #define CONFIG_LOG_LEVEL		"loglevel"
 #define CONFIG_RAIO_PONTO		"raioponto"
 #define CONFIG_DESENHA_CONTORNOS "desenhaContornos"
+#define CONFIG_DESENHA_MAPA		"desenhaMapa"
+#define CONFIG_DESENHA_PONTOS	"desenhaPontos"
 
 class Config {
 	std::map<std::string, std::string> options;
@@ -35,8 +37,10 @@ public:
 
 	void parse(std::string cfgfile);
 	string get(string);
+	void set (string id, string valor);
 	int getInt(string s, int i = 0);
 	bool getBool(string s, bool b = true);
+	void setBool (string id, bool valor);
 
 	void setLog(Log* log) {
 		this->log = log;

@@ -7,6 +7,7 @@
 
 #include "Config.h"
 #include <fstream>
+#include "Convert.h"
 
 using namespace std;
 
@@ -57,6 +58,10 @@ int Config::getInt(string c, int i) {
 		return atoi (s.c_str());
 }
 
+void Config::set(string id, string valor) {
+	options[id] = valor;
+}
+
 bool Config::getBool(string c, bool b) {
 	string s = get(c);
 
@@ -64,6 +69,10 @@ bool Config::getBool(string c, bool b) {
 		return true;
 	else
 		return atoi (s.c_str());
+}
+
+void Config::setBool(string id, bool valor) {
+	options[id] = convert::intToString(valor);
 }
 
 } /* namespace config */

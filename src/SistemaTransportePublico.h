@@ -57,8 +57,8 @@ public:
 //	Linha* procuraLinha(string id);
 	int procuraLinha(string id);
 
-	std::vector<Linha>& getLinhas2() {
-		return linhas2;
+	std::vector<Linha>* getLinhas2() {
+		return &linhas2;
 	}
 
 	List<PontoLinha> *getPontos (string linha){
@@ -70,6 +70,6 @@ public:
 		return linhas2[ind].getContorno();
 	}
 
-	string  intToString (int i);
+
 };
 #endif

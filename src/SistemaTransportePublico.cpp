@@ -14,6 +14,7 @@
 #include "rapidjson/stringbuffer.h"
 
 #include "defs.h"
+#include "Convert.h"
 
 using namespace rapidjson;
 
@@ -204,14 +205,6 @@ void SistemaTransportePublico::carregaContornos() {
 	}
 }
 
-string  SistemaTransportePublico::intToString (int i)
-{
-	std::string s;
-	std::stringstream out;
-	out << i;
-	return out.str();
-}
-
 void SistemaTransportePublico::carregaContornos(int linha, string arquivo) {
 
 	// valida parametros
@@ -265,7 +258,7 @@ void SistemaTransportePublico::carregaContornos(int linha, string arquivo) {
 		//log->debug("coord: " + lat + ", " + lon );
 		insereContorno (linha, c);
 	}
-	log->LOG("contornos inseridos: " + intToString(d.Size()));
+	log->LOG("contornos inseridos: " + convert::intToString(d.Size()));
 }
 
 void SistemaTransportePublico::insereContorno(int linha, Coordenada c) {

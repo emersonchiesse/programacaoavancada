@@ -9,27 +9,33 @@
 
 #include <wx/dialog.h>
 #include "wx/textctrl.h"
+#include "wx/checkbox.h"
 #include <string>
+#include "Config.h"
 
 class ConfigDialog: public wxDialog
 {
 public:
 
 	ConfigDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
+				config::Config *c,
 	              const wxPoint & pos = wxDefaultPosition,
 	              const wxSize & size = wxDefaultSize,
 	              long style = wxDEFAULT_DIALOG_STYLE );
-
-	wxTextCtrl * raioText;
-	wxTextCtrl * showPesosText;
+	~ConfigDialog ();
 
 	std::string  GetText();
 
 private:
 
+	config::Config *config;
 	void OnOk( wxCommandEvent & event );
 
 	std::string raio;
+	wxTextCtrl * raioText;
+	wxTextCtrl * showPesosText;
+	wxCheckBox * chkDesenhaPontos;
+	wxCheckBox * chkDesenhaContornos;
 
 	DECLARE_EVENT_TABLE()
 };

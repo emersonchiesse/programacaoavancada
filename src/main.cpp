@@ -164,13 +164,14 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
     wxPaintDC dc(this);
 
     // desenha mapa
-    dc.DrawBitmap( image, 0, 0, false );
+    if (config.getBool(CONFIG_DESENHA_MAPA))
+    	dc.DrawBitmap( image, 0, 0, false );
 
     // plota pontos
     // para todas as linhas (selecionadas)
 //    List<Linha> *linhas = RIT.getLinhas();
     //ListaLinhas *linhas = RIT.getLinhas();
-    std:vector<Linha> linhas2 = RIT.getLinhas2();
+    vector<Linha> *linhas2 = RIT.getLinhas2();
 
 //    if (linhas == NULL)
 //    	return;
@@ -178,38 +179,40 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
 //    for (Lista<Linha>::iterator l= linhas->begin();
 //    		l != linhas->end(); l++)
 
-    for (int i = 0; i < linhas2.size(); i++)
+//    for (int i = 0; i < linhas2.size(); i++)
+
+    vector<Linha>::iterator ilinhas;
+    for (ilinhas = linhas2->begin(); ilinhas != linhas2->end(); ilinhas++)
     {
-
-			//RIT.getPontos(linha)
-//		Linha *linha = RIT.procuraLinha("001");
-//		if (linha == NULL)
-//			return;
-//		List<PontoLinha> *pontos = linha->getPontos();
-//		if (pontos == NULL)
-//			return;
-
-    	string id = linhas2[i].getId();
+    	Linha *l = (Linha*)&(*ilinhas);
+    	// procura linha
+    	string id = l->getId();
     	int ind = RIT.procuraLinha(id);
     	if (ind < 0)
     		continue;
 
 //    	std::vector<Linha>* linhas2 = RIT.getLinhas2();
-    	List<PontoLinha> *pontos = RIT.getPontos(id);
-		if ((pontos == NULL) || pontos->getTamanho()==0)
-			continue;
 
-		log.debug("plota pontos da linha: " + id);;
+    	// desenha pontos de onibus
+    	if (config.getBool(CONFIG_DESENHA_PONTOS))
+    	{
+    		List<PontoLinha> *pontos = RIT.getPontos(id);
+    		if ((pontos == NULL) || pontos->getTamanho()==0)
+    			continue;
 
-		for (List<PontoLinha>::iterator i = pontos->begin();
-				i != pontos->end(); i++)
-		{
-			PontoLinha p = (PontoLinha)(*i);
-			Coordenada *c = p.getCoordenada();
-			dc.DrawCircle(converteX(c->getLongitude()),
-					converteY(c->getLatitude()), raioPonto);
-		}
+    		log.debug("plota pontos da linha: " + id);;
 
+    		for (List<PontoLinha>::iterator i = pontos->begin();
+    				i != pontos->end(); i++)
+    		{
+    			PontoLinha p = (PontoLinha)(*i);
+    			Coordenada *c = p.getCoordenada();
+    			dc.DrawCircle(converteX(c->getLongitude()),
+    					converteY(c->getLatitude()), raioPonto);
+    		}
+    	}
+
+    	// deesnha contorno
 		if (config.getBool(CONFIG_DESENHA_CONTORNOS))
 		{
 			List<Coordenada> *contorno = RIT.getContorno(id);
@@ -227,10 +230,8 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
     }
 
 
-    // desenha contornos
-
     //wxSize size = GetClientSize();
-    // escolhe cor, se estiver selecionado
+    // escolhe cor
 	if (true)
 	{
 		dc.SetBrush(*wxGREEN_BRUSH); // green filling
@@ -241,13 +242,6 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
 //		dc.SetBrush(*wxBLACK_BRUSH);
 //		dc.SetPen( wxPen( wxColor(255,0,0), 1 ) );
 //	}
-
-	// desenha nodos
-//	dc.DrawCircle(10, 10, raioPonto);
-//	dc.DrawText(wxString::FromUTF8(id.c_str()),
-//			x*MULTIPLIER+5, size.y-y*MULTIPLIER+5);
-
-
 }
 
 inline void MyFrame::OnRotasAbreArquivo(wxCommandEvent& event) {
@@ -281,13 +275,14 @@ inline void MyFrame::OnOnibusAbreArquivo(wxCommandEvent& event) {
 }
 
 void MyFrame::OnConfiguracoes (wxCommandEvent& event) {
-	ConfigDialog dialog ( this, -1, _("Configurações"),
+	ConfigDialog dialog ( this, -1, _("Configurações"), &config,
 				wxPoint(100, 100), wxSize(400, 400) );
-		if ( dialog.ShowModal() != wxID_OK )
-			SetStatusText(_("The about box was cancelled.\n"));
-		else
-		{
-		}
+	if ( dialog.ShowModal() == wxID_OK )
+	{
+
+		this->Refresh(true);
+		this->Update();
+	}
 }
 
 void MyFrame::OnLinhasMostraLista(wxCommandEvent& event) {
