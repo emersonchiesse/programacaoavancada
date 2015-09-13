@@ -29,21 +29,30 @@ END_EVENT_TABLE();
 
 
 ListaDialog::ListaDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
-		const std::string lista,
+//		const std::string lista,
+		std::vector<string> *lista,
 		const wxPoint & position, const wxSize & size, long style )
 : wxDialog( parent, id, title, position, size, style)
 {
 	wxPoint p;
 	wxSize  sz;
 	wxString text = "";
-	text.append (lista);
+	//text.append (lista);
 
 	sz.SetWidth(size.GetWidth() - 20);
 	sz.SetHeight(size.GetHeight() - 70);
 
 	p.x = 6; p.y = 2;
 
-	dialogText = new wxTextCtrl ( this, -1, text, p, sz, wxTE_MULTILINE );
+	//dialogText = new wxTextCtrl ( this, -1, text, p, sz, wxTE_MULTILINE );
+	wxListBox * list = new wxListBox(this, -1, p, sz);
+
+
+	vector<string>::iterator i;
+	for (i = lista->begin(); i != lista->end(); i++)
+	{
+		list->Append(wxString::FromUTF8((*i).c_str()));
+	}
 
 	p.y += sz.GetHeight() + 10;
 	wxButton * b = new wxButton( this, wxID_OK, _("OK"), p, wxDefaultSize );

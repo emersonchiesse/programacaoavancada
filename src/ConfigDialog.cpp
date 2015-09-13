@@ -37,16 +37,19 @@ ConfigDialog::ConfigDialog ( wxWindow * parent, wxWindowID id, const wxString & 
 	chkDesenhaContornos = new wxCheckBox (this, -1, "desenha contornos", p);
 	p.y += sizebox.GetHeight() + 2;
 	chkDesenhaMapa = new wxCheckBox (this, -1, "desenha mapa", p);
+	p.y += sizebox.GetHeight() + 2;
+	chkDesenhaVeiculos = new wxCheckBox (this, -1, "mostra veiculos", p);
 
 	chkDesenhaPontos->SetValue(config->getBool(CONFIG_DESENHA_PONTOS));
 	chkDesenhaContornos->SetValue(config->getBool(CONFIG_DESENHA_CONTORNOS));
 	chkDesenhaMapa->SetValue(config->getBool(CONFIG_DESENHA_MAPA));
+	chkDesenhaVeiculos->SetValue(config->getBool(CONFIG_DESENHA_VEICULOS));
 
 //
 //	raioText = new wxTextCtrl ( this, -1, dimensions, wxPoint(size.GetWidth()/2, 2),
 //			sizebox, wxTE_MULTILINE );
 
-	p.y += sz.GetHeight() - 20;
+	p.y += size.GetHeight() - 70;
 	wxButton * b = new wxButton( this, wxID_OK, _("OK"), p, wxDefaultSize );
 	p.x += 100;
 	wxButton * b2 = new wxButton( this, wxID_CANCEL, _("Cancel"), p, wxDefaultSize );
@@ -66,6 +69,7 @@ void ConfigDialog::OnOk(wxCommandEvent& event) {
 	config->setBool(CONFIG_DESENHA_PONTOS, chkDesenhaPontos->IsChecked());
 	config->setBool(CONFIG_DESENHA_CONTORNOS, chkDesenhaContornos->IsChecked());
 	config->setBool(CONFIG_DESENHA_MAPA, chkDesenhaMapa->IsChecked());
+	config->setBool(CONFIG_DESENHA_VEICULOS, chkDesenhaVeiculos->IsChecked());
 
 	EndModal(wxID_OK);
 	Destroy();

@@ -40,7 +40,7 @@ void SistemaTransportePublico::insereLinha(Linha *l) {
 	linhas2.push_back(*l);
 }
 
-std::string SistemaTransportePublico::listaLinhas() {
+std::string SistemaTransportePublico::listaLinhas(vector<string> *lista) {
 
 	string s = "";
 	std::ostringstream out;
@@ -48,11 +48,12 @@ std::string SistemaTransportePublico::listaLinhas() {
 						i != linhas.end(); i++)
 		{
 			Linha l = (Linha)(*i);
-			s = s + l.getId() + "\n";
-			out << l.getId() << endl; //"\t" << l.getNome() << endl;
+			//s = s + l.getId() + "\n";
+			s = l.getId() + "\t" + l.getNome();
+			lista->push_back(s);
+			out << l.getId() << "\t" << l.getNome() << endl;
 		}
 	return out.str();
-
 }
 
 void SistemaTransportePublico::carregaRotas() {
@@ -268,11 +269,43 @@ void SistemaTransportePublico::insereContorno(int linha, Coordenada c) {
 	linhas2[linha].insereCoordenada(c);
 }
 
-void SistemaTransportePublico::insereLPosicaoVeiculo(string linha,
+void SistemaTransportePublico::inserePosicaoVeiculo(string linha,
 		LocalVeiculo* l) {
 	int ind = procuraLinha(linha);
 	if (ind > 0)
 		linhas2[ind].inserePosicaoVeiculo(l);
+}
+
+string SistemaTransportePublico::sumario() {
+	std::ostringstream out;
+	int npontos = 0;
+	long nposicoes = 0;
+
+	out << "qtde linhas: " << linhas2.size() << endl;
+
+    // para todas as linhas (selecionadas)
+    vector<Linha> *linhas2 = getLinhas2();
+    vector<Linha>::iterator ilinhas;
+    for (ilinhas = linhas2->begin(); ilinhas != linhas2->end(); ilinhas++)
+    {
+    	Linha *l = (Linha*)&(*ilinhas);
+    	// procura linha
+    	string id = l->getId();
+    	int ind = procuraLinha(id);
+    	if (ind < 0)
+    		continue;
+
+    	List<PontoLinha> *pontos = getPontos(id);
+    	npontos += pontos->getTamanho();
+
+    	List<LocalVeiculo> *local = getPosicoesVeiculos(id);
+    	nposicoes += local->getTamanho();
+    }
+
+    out << "qtde pontos: " << npontos << endl;
+    out << "qtde posicoes: " << nposicoes << endl;
+
+    return out.str();
 }
 
 //Linha* SistemaTransportePublico::procuraLinha(string id)
@@ -502,13 +535,42 @@ void SistemaTransportePublico::carregaPontos(string linha, string arquivo) {
 	log->LOG("pontos inseridos:"  + convert::intToString(d.Size()));
 }
 
-void SistemaTransportePublico::carregaVeiculos(string arquivo) {
+void SistemaTransportePublico::carregaVeiculos(string diretorio) {
 
 	// valida parametro
-	if (arquivo.size() == 0)
+	if (diretorio.size() == 0)
 		return;
 
-	log->LOG("carregando arquivo de linhas: " + arquivo);
+	log->LOG("carregando diretorio de posicoes de veiculos: " + diretorio);
+
+	// lista arquivos do diretorio
+	// extrai linha do nome
+	DIR *dir;
+	struct dirent *ent;
+
+	log->LOG("processando diretorio: " + diretorio);
+
+	if ((dir = opendir (diretorio.c_str())) != NULL)
+	{
+	  /* print all the files and directories within directory */
+	  while ((ent = readdir (dir)) != NULL) {
+
+		string arquivo (ent->d_name);
+		log->LOG("processando arquivo: " + arquivo);
+
+		if (arquivo == "." || arquivo == "..")
+			continue;
+
+		carregaArquivoVeiculos(diretorio + "/" + arquivo);
+	  }
+	  closedir (dir);
+	} else {
+	  /* could not open directory */
+		log->LOG("erro para abrir diretorio ");
+	}
+}
+
+void SistemaTransportePublico::carregaArquivoVeiculos(string arquivo) {
 
 	// verifica se arquivo existe
 	std::ifstream t (arquivo.c_str());
@@ -518,8 +580,15 @@ void SistemaTransportePublico::carregaVeiculos(string arquivo) {
 		return;
 	}
 
+	int ind = arquivo.find("veiculoslinhas-");
+	if (ind < 0)
+	{
+		log->LOG("arquivo invalido de posicoes");
+		return;
+	}
+
 	// extrai data e hora
-	int ind = arquivo.find("--")+2;
+	ind = arquivo.find("--")+2;
 	string data = arquivo.substr(ind, 8);
 //	ind = arquivo.find(".")-6;
 //	string hora = arquivo.substr(ind, 6);
@@ -568,7 +637,7 @@ void SistemaTransportePublico::carregaVeiculos(string arquivo) {
 				c
 				);
 
-		insereLPosicaoVeiculo (d[i][JSON_VEICULO_LINHA].GetString(),
+		inserePosicaoVeiculo (d[i][JSON_VEICULO_LINHA].GetString(),
 				l);
 	}
 	log->LOG("posicoes de veiculos inseridas: "  + convert::intToString(d.Size()));

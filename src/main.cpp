@@ -98,6 +98,7 @@ public:
     void OnRotasAbreArquivo(wxCommandEvent& event);
     void OnOnibusAbreArquivo(wxCommandEvent& event);
     void OnConfiguracoes(wxCommandEvent& event);
+    void OnSumario(wxCommandEvent& event);
     void OnCarregaTudo(wxCommandEvent& event);
     void OnQuit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
@@ -147,6 +148,7 @@ enum
 	menuArquivoHorarios,
 	menuLinhasLista,
 	menuConfiguracoes,
+	menuSumario,
 	menuCarregaTudo,
 
 	menuSair = wxID_EXIT,
@@ -192,6 +194,18 @@ void MyFrame::desenhaContorno (wxPaintDC *dc, string id)
 					converteY(c.getLatitude()));
 		}
 	}
+}
+
+inline void MyFrame::OnSumario(wxCommandEvent& event) {
+
+//	string s = RIT.sumario();
+//
+//    ListaDialog dialog ( this, -1, _("Sumario"),
+//    		 s,
+//			wxPoint(100, 100), wxSize(400, 400) );
+//	if ( dialog.ShowModal() == wxID_OK )
+//	{
+//	}
 }
 
 void MyFrame::desenhaVeiculos (wxPaintDC *dc, string id)
@@ -273,9 +287,7 @@ inline void MyFrame::OnRotasAbreArquivo(wxCommandEvent& event) {
 	    LinhasDialog dialog ( this, -1, _("Digite numero de nós"),
 	    		string(fileName.ToAscii()),
 				wxPoint(100, 100), wxSize(200, 200) );
-		if ( dialog.ShowModal() != wxID_OK )
-			SetStatusText(_("The about box was cancelled.\n"));
-		else
+		if ( dialog.ShowModal() == wxID_OK )
 		{
 
 		}
@@ -284,10 +296,9 @@ inline void MyFrame::OnRotasAbreArquivo(wxCommandEvent& event) {
 }
 
 inline void MyFrame::OnOnibusAbreArquivo(wxCommandEvent& event) {
-	wxFileDialog * openFileDialog = new wxFileDialog(this);
-	if (openFileDialog->ShowModal() == wxID_OK){
-
-		wxString fileName = openFileDialog->GetPath();
+	wxDirDialog * dirDialog = new wxDirDialog(this);
+	if (dirDialog->ShowModal() == wxID_OK){
+		wxString fileName = dirDialog->GetPath();
 
 		RIT.carregaVeiculos(string(fileName.ToAscii()));
 
@@ -301,22 +312,18 @@ void MyFrame::OnConfiguracoes (wxCommandEvent& event) {
 				wxPoint(100, 100), wxSize(400, 400) );
 	if ( dialog.ShowModal() == wxID_OK )
 	{
-
 		this->Refresh(true);
 		this->Update();
 	}
 }
 
 void MyFrame::OnLinhasMostraLista(wxCommandEvent& event) {
-	string lista = RIT.listaLinhas();
+	vector<string> lista;
+			RIT.listaLinhas(&lista);
     ListaDialog dialog ( this, -1, _("Linhas"),
-    		lista,
+    		&lista,
 			wxPoint(100, 100), wxSize(400, 400) );
-	if ( dialog.ShowModal() != wxID_OK )
-		SetStatusText(_("The about box was cancelled.\n"));
-	else
-	{
-	}
+	dialog.ShowModal();
 }
 
 void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
@@ -356,6 +363,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 	EVT_MENU(menuArquivoVeiculos,  MyFrame::OnOnibusAbreArquivo)
 	EVT_MENU(menuLinhasLista,  MyFrame::OnLinhasMostraLista)
 	EVT_MENU(menuConfiguracoes,  MyFrame::OnConfiguracoes)
+	EVT_MENU(menuSumario,  MyFrame::OnSumario)
 	EVT_MENU(menuCarregaTudo,  MyFrame::OnCarregaTudo)
     EVT_MENU(menuSair,  MyFrame::OnQuit)
     EVT_MENU(Minimal_About, MyFrame::OnAbout)
@@ -434,6 +442,7 @@ MyFrame::MyFrame(const wxString& title)
     menuLinhas->Append(menuLinhasLista, _T("lista as linhas..."), _T(""));
 
     menuFerramentas->Append(menuConfiguracoes, _T("Configurações..."), _T(""));
+    menuFerramentas->Append(menuSumario, _T("Sumario..."), _T(""));
 
     menuCarregaDados->Append(menuCarregaTudo, _T("Carrega todos os dados..."), _T(""));
 

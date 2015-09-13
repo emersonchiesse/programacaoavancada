@@ -11,19 +11,24 @@
 
 #include <wx/dialog.h>
 #include "wx/textctrl.h"
+#include "wx/listbox.h"
+
 #include <string>
+#include <vector>
 
 class ListaDialog: public wxDialog
 {
 public:
 
 	ListaDialog ( wxWindow * parent, wxWindowID id, const wxString & title,
-			const std::string arquivo,
+			//const std::string arquivo,
+			std::vector<std::string> *lista,
 	              const wxPoint & pos = wxDefaultPosition,
 	              const wxSize & size = wxDefaultSize,
 	              long style = wxDEFAULT_DIALOG_STYLE );
 
 	wxTextCtrl * dialogText;
+	wxListBox * list;
 
 private:
 

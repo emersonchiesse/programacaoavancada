@@ -37,10 +37,11 @@ private:
 public:
 	SistemaTransportePublico (): config(0), log(0) {};
 	void Init (config::Config *c, Log *l) ;
+	string sumario();
 
 	void carregaLinhas ();
 	void carregaLinhas (string arquivo);
-	string listaLinhas();
+	string listaLinhas(vector<string> *lista);
 	void insereLinha(Linha *l);
 
 	string listaPontosLinha (string linha);
@@ -56,7 +57,8 @@ public:
 	void insereContorno (int linha, Coordenada c);
 
 	void carregaVeiculos(string);
-	void insereLPosicaoVeiculo (string linha, LocalVeiculo* l);
+	void carregaArquivoVeiculos(string arquivo);
+	void inserePosicaoVeiculo (string linha, LocalVeiculo* l);
 	List<LocalVeiculo> *getPosicoesVeiculos (string linha){
 		int ind = procuraLinha (linha);
 		return linhas2[ind].getPosicoesVeiculos();

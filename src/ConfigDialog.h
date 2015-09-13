@@ -37,6 +37,7 @@ private:
 	wxCheckBox * chkDesenhaPontos;
 	wxCheckBox * chkDesenhaContornos;
 	wxCheckBox * chkDesenhaMapa;
+	wxCheckBox * chkDesenhaVeiculos;
 
 	DECLARE_EVENT_TABLE()
 };
