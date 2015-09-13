@@ -17,14 +17,14 @@ class PontoLinha
 private:
 	std::string nome;
 	std::string num;
+	string tipo;
+	std::string sentido;
+	int grupo;
 	Coordenada coordenada;
 	int sequencia;
-	string tipo;
-	int grupo;
-	std::string sentido;
 
 public:
-	PontoLinha() { grupo = 0; sequencia = 0;};
+	PontoLinha() { grupo = 0; sequencia = 0; nome = "";};
 	PontoLinha(string _nome,
 			string _num,
 			string _tipo,
@@ -42,6 +42,8 @@ public:
 	{
 
 	};
+
+	~PontoLinha() {};
 
 	Coordenada *getCoordenada ();
 };

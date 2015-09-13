@@ -13,7 +13,7 @@
 class ColetaRotas : public Thread
 {
 private:
-	RotaLinha rota;
+	Contorno rota;
 
 	std::string agenda;
 

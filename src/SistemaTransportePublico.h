@@ -32,7 +32,7 @@ private:
 	Log *log;
 
 public:
-	SistemaTransportePublico () {};
+	SistemaTransportePublico (): config(0), log(0) {};
 	void Init (config::Config *c, Log *l) ;
 
 	void carregaLinhas ();
@@ -44,6 +44,13 @@ public:
 	string listaPontosLinha (string linha);
 	void carregaPontos();
 	void carregaPontos (string linha, string arquivo);
+
+	void carregaRotas();
+	void carregaRotas (string linha, string arquivo);
+
+	void carregaContornos();
+	void carregaContornos (int linha, string arquivo);
+	void insereContorno (int linha, Coordenada c);
 
 	//ListaLinhas * getLinhas();
 	List<Linha>* getLinhas();
@@ -58,5 +65,11 @@ public:
 		int ind = procuraLinha (linha);
 		return linhas2[ind].getPontos();
 	}
+	List<Coordenada> *getContorno (string linha){
+		int ind = procuraLinha (linha);
+		return linhas2[ind].getContorno();
+	}
+
+	string  intToString (int i);
 };
 #endif

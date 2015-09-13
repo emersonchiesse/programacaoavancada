@@ -18,7 +18,7 @@ private:
 
 
 public:
-	Coordenada() {};
+	Coordenada() { latitude = 0; longitude = 0; altitude = 0;};
 	Coordenada(string lat, string lon)
 	{
 		latitude = ::atof(lat.c_str());

@@ -21,6 +21,7 @@ private:
 	bool somente_cartao;
 	Lista<PontoLinha> pontos;
 	List<PontoLinha> pontos2;
+	List<Coordenada> contorno;
 
 public:
 	Linha (string id,
@@ -32,6 +33,8 @@ public:
 //		categoria = l;
 	};
 
+	~Linha() {};
+
 	std::string getDescricao();
 	std::string getCategoria();
 	std::string getCartao();
@@ -39,5 +42,8 @@ public:
 	bool inserePonto(PontoLinha *p);
 	string listaPontos ();
 	List<PontoLinha>* getPontos();
+	List<Coordenada>* getContorno();
+
+	void insereCoordenada (Coordenada c);
 };
 #endif

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <assert.h>
 
-#include "Lista.h"
+#include "Lista2.h"
 #include "Rotas.h"
 #include "Hora.h"
 #include "Coordenada.h"
@@ -15,7 +15,7 @@
 class CalculoDeRota
 {
 private:
-//	Lista<Rotas> listaRotas;
+	List<Rotas> listaRotas;
 
 	float custoTotal;
 

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <fstream>
 #include <dirent.h>
+#include <sstream>
 
 #include "SistemaTransportePublico.h"
 
@@ -14,6 +15,7 @@
 
 #include "defs.h"
 
+using namespace rapidjson;
 
 void SistemaTransportePublico::Init(config::Config *c,
 		Log *l) {
@@ -24,6 +26,7 @@ void SistemaTransportePublico::Init(config::Config *c,
 	{
 		carregaLinhas();
 		carregaPontos();
+		carregaContornos();
 	}
 }
 
@@ -36,16 +39,238 @@ void SistemaTransportePublico::insereLinha(Linha *l) {
 std::string SistemaTransportePublico::listaLinhas() {
 
 	string s = "";
+	std::ostringstream out;
 	for (List<Linha>::iterator i = linhas.begin();
 						i != linhas.end(); i++)
 		{
 			Linha l = (Linha)(*i);
 			s = s + l.getId() + "\n";
+			out << l.getId() << endl; //"\t" << l.getNome() << endl;
 		}
-	return s;
+	return out.str();
 
 }
 
+void SistemaTransportePublico::carregaRotas() {
+	// lista arquivos do diretorio
+	// extrai linha do nome
+	DIR *dir;
+	struct dirent *ent;
+	string diretorio = config->get(CONFIG_DIR_ROTAS);
+
+	log->LOG("processando diretorio: " + diretorio);
+
+	if ((dir = opendir (diretorio.c_str())) != NULL)
+	{
+	  /* print all the files and directories within directory */
+	  while ((ent = readdir (dir)) != NULL) {
+
+		string arquivo (ent->d_name);
+		log->LOG("processando arquivo: " + arquivo);
+
+		if (arquivo == "." || arquivo == "..")
+			continue;
+
+		int ind = arquivo.find("-")+1;
+		string linha = arquivo.substr(ind, 3);
+
+		// TODO checa se linha existe
+		carregaRotas (linha, diretorio + "/" + arquivo);
+	  }
+	  closedir (dir);
+	} else {
+	  /* could not open directory */
+		log->LOG("erro para abrir diretorio ");
+	}
+}
+
+void SistemaTransportePublico::carregaRotas(string linha, string arquivo) {
+
+	// valida parametros
+	if ((arquivo.size() == 0) || (linha.size() == 0))
+	{
+		log->LOG("parametros vazios.");
+		return;
+	}
+
+	log->LOG("carregando arquivo de pontos: " + arquivo +
+			" da linha " + linha);
+
+	// verifica se arquivo existe
+	std::ifstream t (arquivo.c_str());
+	if (!t)
+	{
+		log->LOG("arquivo nao existe");
+		return;
+	}
+
+	// transforma arquivo de ifstream para string
+	std::string str;
+	t.seekg(0, std::ios::end);
+	str.reserve(t.tellg());
+	t.seekg(0, std::ios::beg);
+
+	str.assign((std::istreambuf_iterator<char>(t)),
+			std::istreambuf_iterator<char>());
+
+	if (str.length() == 0)
+	{
+		log->LOG("arquivo vazio");
+		return;
+	}
+	// parse de string para JSON
+	Document d;
+	d.Parse(str.c_str());
+	assert(d.IsArray());
+	cout << d.Size() << endl;
+	for (SizeType i = 0; i < d.Size(); i++)
+	{
+		assert(d[i].IsObject());
+		assert(d[i].HasMember(JSON_PONTO_NOME));
+		assert(d[i][JSON_PONTO_NOME].IsString());
+		assert(d[i].HasMember(JSON_PONTO_LATITUDE));
+		assert(d[i][JSON_PONTO_LATITUDE].IsString());
+		assert(d[i].HasMember(JSON_PONTO_LONGITUDE));
+		assert(d[i][JSON_PONTO_LONGITUDE].IsString());
+		assert(d[i].HasMember(JSON_PONTO_TIPO));
+		assert(d[i][JSON_PONTO_TIPO].IsString());
+		assert(d[i].HasMember(JSON_PONTO_NUMERO));
+		assert(d[i][JSON_PONTO_NUMERO].IsString());
+		assert(d[i].HasMember(JSON_PONTO_SENTIDO));
+		assert(d[i][JSON_PONTO_SENTIDO].IsString());
+		assert(d[i].HasMember(JSON_PONTO_SEQUENCIA));
+		assert(d[i][JSON_PONTO_SEQUENCIA].IsString());
+
+		string lat = d[i][JSON_PONTO_LATITUDE].GetString();
+		lat[3]='.';
+		string lon = d[i][JSON_PONTO_LONGITUDE].GetString();
+		lon[3]='.';
+
+		Coordenada c (lat, lon);
+
+		PontoLinha *p = new PontoLinha(
+				d[i][JSON_PONTO_NOME].GetString(),
+				d[i][JSON_PONTO_NUMERO].GetString(),
+				d[i][JSON_PONTO_TIPO].GetString(),
+				d[i][JSON_PONTO_SENTIDO].GetString(),
+				0,
+				0,
+				c
+		);
+
+		cout << "ponto: " << d[i][JSON_PONTO_NOME].GetString()
+									<< " lat " << lat
+									<< " lon " << lon
+									<< endl;
+
+		inserePontoLinha (linha, p);
+	}
+	log->LOG("pontos inseridos." );
+}
+
+void SistemaTransportePublico::carregaContornos() {
+	// lista arquivos do diretorio
+	// extrai linha do nome
+	DIR *dir;
+	struct dirent *ent;
+	string diretorio = config->get(CONFIG_DIR_CONTORNOS);
+
+	log->LOG("processando diretorio: " + diretorio);
+
+	if ((dir = opendir (diretorio.c_str())) != NULL)
+	{
+	  /* print all the files and directories within directory */
+	  while ((ent = readdir (dir)) != NULL) {
+
+		string arquivo (ent->d_name);
+		log->LOG("processando arquivo: " + arquivo);
+
+		if (arquivo == "." || arquivo == "..")
+			continue;
+
+		int ind = arquivo.find("-")+1;
+		string linha = arquivo.substr(ind, 3);
+
+		// TODO checa se linha existe
+		ind = procuraLinha(linha);
+		if (ind >= 0)
+			carregaContornos (ind, diretorio + "/" + arquivo);
+
+	  }
+	  closedir (dir);
+	} else {
+	  /* could not open directory */
+		log->LOG("erro para abrir diretorio ");
+	}
+}
+
+string  SistemaTransportePublico::intToString (int i)
+{
+	std::string s;
+	std::stringstream out;
+	out << i;
+	return out.str();
+}
+
+void SistemaTransportePublico::carregaContornos(int linha, string arquivo) {
+
+	// valida parametros
+	if ((arquivo.size() == 0) || (linha < 0))
+	{
+		log->LOG("parametros invalidos.");
+		return;
+	}
+
+	// verifica se arquivo existe
+	std::ifstream t (arquivo.c_str());
+	if (!t)
+	{
+		log->LOG("arquivo nao existe");
+		return;
+	}
+
+	// transforma arquivo de ifstream para string
+	std::string str;
+	t.seekg(0, std::ios::end);
+	str.reserve(t.tellg());
+	t.seekg(0, std::ios::beg);
+
+	str.assign((std::istreambuf_iterator<char>(t)),
+			std::istreambuf_iterator<char>());
+
+	if (str.length() == 0)
+	{
+		log->LOG("arquivo vazio");
+		return;
+	}
+	// parse de string para JSON
+	Document d;
+	d.Parse(str.c_str());
+	assert(d.IsArray());
+	for (SizeType i = 0; i < d.Size(); i++)
+	{
+		assert(d[i].IsObject());
+		assert(d[i].HasMember(JSON_PONTO_LATITUDE));
+		assert(d[i][JSON_PONTO_LATITUDE].IsString());
+		assert(d[i].HasMember(JSON_PONTO_LONGITUDE));
+		assert(d[i][JSON_PONTO_LONGITUDE].IsString());
+
+		string lat = d[i][JSON_PONTO_LATITUDE].GetString();
+		lat[3]='.';
+		string lon = d[i][JSON_PONTO_LONGITUDE].GetString();
+		lon[3]='.';
+
+		Coordenada c (lat, lon);
+
+		//log->debug("coord: " + lat + ", " + lon );
+		insereContorno (linha, c);
+	}
+	log->LOG("contornos inseridos: " + intToString(d.Size()));
+}
+
+void SistemaTransportePublico::insereContorno(int linha, Coordenada c) {
+	linhas2[linha].insereCoordenada(c);
+}
 
 //Linha* SistemaTransportePublico::procuraLinha(string id)
 //{
@@ -109,7 +334,6 @@ void SistemaTransportePublico::carregaLinhas() {
 	carregaLinhas(config->get(CONFIG_ARQUIVO_LINHAS));
 }
 
-using namespace rapidjson;
 void SistemaTransportePublico::carregaLinhas(string arquivo) {
 
 	// valida parametro
@@ -190,8 +414,6 @@ void SistemaTransportePublico::carregaPontos() {
 	  /* could not open directory */
 		log->LOG("erro para abrir diretorio ");
 	}
-
-
 }
 
 void SistemaTransportePublico::carregaPontos(string linha, string arquivo) {

@@ -209,10 +209,25 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
 			dc.DrawCircle(converteX(c->getLongitude()),
 					converteY(c->getLatitude()), raioPonto);
 		}
+
+		if (config.getBool(CONFIG_DESENHA_CONTORNOS))
+		{
+			List<Coordenada> *contorno = RIT.getContorno(id);
+			if ((contorno == NULL) || contorno->getTamanho()==0)
+						continue;
+
+			for (List<Coordenada>::iterator i = contorno->begin();
+					i != contorno->end(); i++)
+			{
+				Coordenada c = (Coordenada)(*i);
+				dc.DrawPoint(converteX(c.getLongitude()),
+						converteY(c.getLatitude()));
+			}
+		}
     }
 
 
-    // desenha rotas
+    // desenha contornos
 
     //wxSize size = GetClientSize();
     // escolhe cor, se estiver selecionado
@@ -228,7 +243,7 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
 //	}
 
 	// desenha nodos
-	dc.DrawCircle(10, 10, raioPonto);
+//	dc.DrawCircle(10, 10, raioPonto);
 //	dc.DrawText(wxString::FromUTF8(id.c_str()),
 //			x*MULTIPLIER+5, size.y-y*MULTIPLIER+5);
 

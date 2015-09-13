@@ -11,7 +11,7 @@
 #include "Linha.h"
 #include "Coordenada.h"
 
-class RotaLinha //: public Lista
+class Contorno //: public Lista
 {
 private:
 	Linha linha;

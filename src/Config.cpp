@@ -57,4 +57,13 @@ int Config::getInt(string c, int i) {
 		return atoi (s.c_str());
 }
 
+bool Config::getBool(string c, bool b) {
+	string s = get(c);
+
+	if (s.length() == 0)
+		return true;
+	else
+		return atoi (s.c_str());
+}
+
 } /* namespace config */

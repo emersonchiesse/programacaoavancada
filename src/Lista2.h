@@ -50,6 +50,7 @@ class Node
 	Node (T data) : _data(data), _next(0) {}
 	Node (T data, Node<T>* next) : _data(data), _next(next){}
 	Node (Node<T>* next) : _next(next) {}
+	~Node() {};
 
 	T _data;
 	Node<T>* _next;

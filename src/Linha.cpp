@@ -39,3 +39,12 @@ string Linha::listaPontos() {
 List<PontoLinha>* Linha::getPontos() {
 	return &pontos2;
 }
+
+List<Coordenada>* Linha::getContorno() {
+	return &contorno;
+}
+
+void Linha::insereCoordenada(Coordenada c) {
+	contorno.insere(c);
+}
+

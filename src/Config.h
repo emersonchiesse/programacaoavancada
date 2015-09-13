@@ -19,8 +19,11 @@ using namespace std;
 #define CONFIG_ARQUIVO_LINHAS 	"arquivoLinhas"
 #define CONFIG_CARREGA_AUTO   	"iniciaAutomatico"
 #define CONFIG_DIR_PONTOS		"diretorioPontos"
+#define CONFIG_DIR_ROTAS		"diretorioRotas"
+#define CONFIG_DIR_CONTORNOS	"diretorioContornos"
 #define CONFIG_LOG_LEVEL		"loglevel"
 #define CONFIG_RAIO_PONTO		"raioponto"
+#define CONFIG_DESENHA_CONTORNOS "desenhaContornos"
 
 class Config {
 	std::map<std::string, std::string> options;
@@ -33,6 +36,7 @@ public:
 	void parse(std::string cfgfile);
 	string get(string);
 	int getInt(string s, int i = 0);
+	bool getBool(string s, bool b = true);
 
 	void setLog(Log* log) {
 		this->log = log;
