@@ -14,6 +14,7 @@
 #include "CalculoDeRota.h"
 #include "SistemaRastreamentoPassageiro.h"
 #include "Config.h"
+#include "log.h"
 
 using namespace std;
 
@@ -27,11 +28,12 @@ private:
 	Lista<CartaoUsuario> passageiros;
 	CalculoDeRota calculoRota;
 	SistemaRastreamentoPassageiro usuarios;
-	config::Config config;
+	config::Config *config;
+	Log *log;
 
 public:
 	SistemaTransportePublico () {};
-	void Init ();
+	void Init (config::Config *c, Log *l) ;
 
 	void carregaLinhas ();
 	void carregaLinhas (string arquivo);
@@ -40,6 +42,8 @@ public:
 
 	void inserePontoLinha (string linha, PontoLinha *p);
 	string listaPontosLinha (string linha);
+	void carregaPontos();
+	void carregaPontos (string linha, string arquivo);
 
 	//ListaLinhas * getLinhas();
 	List<Linha>* getLinhas();

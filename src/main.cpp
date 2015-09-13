@@ -47,6 +47,7 @@
 #include "PontoLinha.h"
 #include "SistemaTransportePublico.h"
 #include "Config.h"
+#include "log.h"
 
 
 using namespace std;
@@ -122,6 +123,7 @@ private:
 
 	SistemaTransportePublico RIT;
 	config::Config config;
+	Log log;
 };
 
 // ----------------------------------------------------------------------------
@@ -190,14 +192,14 @@ void MyFrame::OnPaint(wxPaintEvent& event) {
     	string id = linhas2[i].getId();
     	int ind = RIT.procuraLinha(id);
     	if (ind < 0)
-    		return;
+    		continue;
 
 //    	std::vector<Linha>* linhas2 = RIT.getLinhas2();
     	List<PontoLinha> *pontos = RIT.getPontos(id);
 		if ((pontos == NULL) || pontos->getTamanho()==0)
-			return;
+			continue;
 
-		cout << "plota pontos da linha: " << id << endl;
+		log.debug("plota pontos da linha: " + id);;
 
 		for (List<PontoLinha>::iterator i = pontos->begin();
 				i != pontos->end(); i++)
@@ -298,57 +300,9 @@ void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
 		LinhasDialog dialog ( this, -1, _("Abre arquivo de pontos"),
 				string(fileName.ToAscii()),
 				wxPoint(100, 100), wxSize(400, 400) );
-		if ( dialog.ShowModal() != wxID_OK )
-			SetStatusText(_("The about box was cancelled.\n"));
-		else
+		if ( dialog.ShowModal() == wxID_OK )
 		{
-			Document d;
-			d.Parse(dialog.GetText().c_str());
-			assert(d.IsArray());
-			cout << d.Size() << endl;
-			for (SizeType i = 0; i < d.Size(); i++)
-			{
-				assert(d[i].IsObject());
-				assert(d[i].HasMember(JSON_PONTO_NOME));
-				assert(d[i][JSON_PONTO_NOME].IsString());
-				assert(d[i].HasMember(JSON_PONTO_LATITUDE));
-				assert(d[i][JSON_PONTO_LATITUDE].IsString());
-				assert(d[i].HasMember(JSON_PONTO_LONGITUDE));
-				assert(d[i][JSON_PONTO_LONGITUDE].IsString());
-				assert(d[i].HasMember(JSON_PONTO_TIPO));
-				assert(d[i][JSON_PONTO_TIPO].IsString());
-				assert(d[i].HasMember(JSON_PONTO_NUMERO));
-				assert(d[i][JSON_PONTO_NUMERO].IsString());
-				assert(d[i].HasMember(JSON_PONTO_SENTIDO));
-				assert(d[i][JSON_PONTO_SENTIDO].IsString());
-				assert(d[i].HasMember(JSON_PONTO_SEQUENCIA));
-				assert(d[i][JSON_PONTO_SEQUENCIA].IsString());
-
-				string lat = d[i][JSON_PONTO_LATITUDE].GetString();
-				lat[3]='.';
-				string lon = d[i][JSON_PONTO_LONGITUDE].GetString();
-				lon[3]='.';
-
-				Coordenada c (lat, lon);
-
-				PontoLinha *p = new PontoLinha(
-						d[i][JSON_PONTO_NOME].GetString(),
-						d[i][JSON_PONTO_NUMERO].GetString(),
-						d[i][JSON_PONTO_TIPO].GetString(),
-						d[i][JSON_PONTO_SENTIDO].GetString(),
-						0,
-						0,
-						c
-				);
-
-				cout << "ponto: " << d[i][JSON_PONTO_NOME].GetString()
-						<< " lat " << lat
-						<< " lon " << lon
-						<< endl;
-
-
-				RIT.inserePontoLinha (linha, p);
-			}
+			RIT.carregaPontos(linha, string(fileName.ToAscii()));
 
 			this->Refresh(true);
 			this->Update();
@@ -358,9 +312,8 @@ void MyFrame::OnPontosAbreArquivo(wxCommandEvent& event) {
 }
 
 void MyFrame::OnCarregaTudo(wxCommandEvent& event) {
-	// carrega linhas
 	RIT.carregaLinhas();
-	// carrega pontos
+	RIT.carregaPontos();
 	// carrega shapes
 
 }
@@ -472,15 +425,20 @@ MyFrame::MyFrame(const wxString& title)
     //Board *board = new Board(this);
     //board->SetFocus();
 
+   char cwd[1024];
+   if (getcwd(cwd, sizeof(cwd)) != NULL)
+	   cout <<"Current working dir: " << cwd << endl;;
+
     image.LoadFile("/home/x/msc/urbs/staticmap.png", wxBITMAP_TYPE_PNG);
-    raioPonto=2;
-	margemEsquerda = -49.456909;
+    margemEsquerda = -49.456909;
 	margemDireita = -49.097456;
 	margemSuperior = -25.218254;
 	margemInferior = -25.658483;
 
+	config.setLog(&log);
 	config.parse("urbs.cfg");
-    RIT.Init();
+    RIT.Init(&config, &log);
+    raioPonto=config.getInt(CONFIG_RAIO_PONTO, 2);
 }
 
 
@@ -531,7 +489,9 @@ void MyFrame::OnLinhasAbreArquivo(wxCommandEvent& event) {
 		    		string(fileName.ToAscii()),
 					wxPoint(100, 100), wxSize(400, 400) );
 			if ( dialog.ShowModal() == wxID_OK )
+			{
 				RIT.carregaLinhas(string(fileName.ToAscii()));
+			}
 	}
 }
 
@@ -560,38 +520,10 @@ int MyFrame::converteY(double lon)
 }
 
 void MyFrame::OnMouse(wxMouseEvent& event) {
+	wxSize size = GetClientSize();
+	int x = event.GetX();
+	int y = event.GetY();
 
-	int ind = -1;
-	{
-		wxSize size = GetClientSize();
-		int x = event.GetX();
-		int y = event.GetY();
-
-		SetStatusText(wxString::Format(_T("x: %f, y: %f"),
-				converteLat(x), converteLon(y)));
-
-//		ind = grafo.procura(x/MULTIPLIER, (size.y - y)/MULTIPLIER);
-//		if (ind >= 0)
-//		{
-//			std::vector<Nodo> nodos = grafo.getNodos();
-//			SetStatusText(wxString::Format(_T("x: %d, y: %d, nodo: %s"),
-//					x, y, nodos[ind].getId().c_str()));
-//
-//			if (event.LeftUp())
-//			{
-//				vector <string>::iterator i = nodosSelecionados.begin ();
-//				i = std::find(nodosSelecionados.begin(),
-//						nodosSelecionados.end(),
-//						nodos[ind].getId().c_str());
-//				if (i == nodosSelecionados.end() )
-//					nodosSelecionados.push_back(nodos[ind].getId().c_str());
-//				else
-//					nodosSelecionados.erase(i);
-//
-//				SetStatusText("select!");
-//				this->Refresh(true);
-//				this->Update();
-//			}
-//		}
-	}
+	SetStatusText(wxString::Format(_T("x: %f, y: %f"),
+			converteLat(x), converteLon(y)));
 }
