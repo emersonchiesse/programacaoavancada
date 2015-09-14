@@ -32,6 +32,12 @@ using namespace std;
 #define CONFIG_DESENHA_PONTOS	"desenhaPontos"
 #define CONFIG_DESENHA_VEICULOS	"desenhaVeiculos"
 
+#define CONFIG_IMAGEM_MAPA				"mapa"
+
+#define CONFIG_THREAD_COLETA_LINHA		"coletaLinhasIntervalo"
+#define CONFIG_URL_GET_LINHAS 			"urlGetLinhas"
+#define CONFIG_URL_GET_LINHAS_ARQ_SAIDA	"linhasArquivoSaida"
+
 class Config {
 	std::map<std::string, std::string> options;
 	Log *log;

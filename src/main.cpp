@@ -1,14 +1,4 @@
 
-/////////////////////////////////////////////////////////////////////////////
-// Name:        minimal.cpp
-// Purpose:     Minimal wxWidgets sample
-// Author:      Julian Smart
-// Modified by:
-// Created:     04/01/98
-// RCS-ID:      $Id: minimal.cpp 43915 2006-12-11 09:33:34Z CE $
-// Copyright:   (c) Julian Smart
-// Licence:     wxWindows licence
-/////////////////////////////////////////////////////////////////////////////
 
 // ============================================================================
 // declarations
@@ -49,6 +39,7 @@
 #include "SistemaTransportePublico.h"
 #include "Config.h"
 #include "log.h"
+#include "ColetaLinhas.h"
 
 
 using namespace std;
@@ -115,6 +106,7 @@ public:
 private:
     // any class wishing to process wxWidgets events must use this macro
     DECLARE_EVENT_TABLE()
+
     wxBitmap image;
     int raioPonto;
 
@@ -126,6 +118,7 @@ private:
 	SistemaTransportePublico RIT;
 	config::Config config;
 	Log log;
+	ColetaLinhas coletaLinhas;
 
 	void desenhaPontos (wxPaintDC *dc, string id);
 	void desenhaContorno (wxPaintDC *dc, string linha);
@@ -319,11 +312,8 @@ void MyFrame::OnConfiguracoes (wxCommandEvent& event) {
 }
 
 void MyFrame::OnLinhasMostraLista(wxCommandEvent& event) {
-//	vector<string> lista;
-//	RIT.listaLinhas(&lista);
 	ListaLinhasDialog dialog ( this, -1, _("Linhas"),
 			RIT.getLinhas2(),
-			//&lista,
 			wxPoint(100, 100), wxSize(400, 400) );
 	dialog.ShowModal();
 }
@@ -411,8 +401,6 @@ bool MyApp::OnInit()
 }
 
 
-
-
 // ----------------------------------------------------------------------------
 // main frame
 // ----------------------------------------------------------------------------
@@ -422,9 +410,6 @@ MyFrame::MyFrame(const wxString& title)
        : wxFrame(NULL, wxID_ANY, title)
 {
 	Connect(wxEVT_PAINT, wxPaintEventHandler(MyFrame::OnPaint));
-
-    // set the frame icon
-    //SetIcon(wxICON(sample));
 
 #if wxUSE_MENUS
     // cria árvore de menus
@@ -436,15 +421,16 @@ MyFrame::MyFrame(const wxString& title)
 
     fileMenu->Append(menuArquivoLinhas, _T("Carrega linhas..."), _T(""));
 	fileMenu->Append(menuArquivoPontos, _T("Carrega pontos..."), _T(""));
-	fileMenu->Append(menuArquivoRotas, _T("Carrega rotas..."), _T(""));
-    fileMenu->Append(menuArquivoHorarios, _T("Carrega horarios..."), _T(""));
+	//fileMenu->Append(menuArquivoRotas, _T("Carrega rotas..."), _T(""));
+    //fileMenu->Append(menuArquivoHorarios, _T("Carrega horarios..."), _T(""));
     fileMenu->Append(menuArquivoVeiculos, _T("Carrega veiculos..."), _T(""));
     fileMenu->Append(menuSair, _T("E&ncerra\tAlt-X"), _T("Encerra este programa"));
 
-    menuLinhas->Append(menuLinhasLista, _T("lista as linhas..."), _T(""));
+    menuLinhas->Append(menuLinhasLista, _T("Lista todas linhas..."), _T(""));
 
     menuFerramentas->Append(menuConfiguracoes, _T("Configurações..."), _T(""));
     menuFerramentas->Append(menuSumario, _T("Sumario..."), _T(""));
+//    menuFerramentas->Append(menuColetas, _T("Sumario..."), _T(""));
 
     menuCarregaDados->Append(menuCarregaTudo, _T("Carrega todos os dados..."), _T(""));
 
@@ -466,23 +452,24 @@ MyFrame::MyFrame(const wxString& title)
     //SetStatusText(_T("Welcome to wxWidgets!"));
 #endif // wxUSE_STATUSBAR
 
-    //Board *board = new Board(this);
-    //board->SetFocus();
-
    char cwd[1024];
    if (getcwd(cwd, sizeof(cwd)) != NULL)
 	   cout <<"Current working dir: " << cwd << endl;;
-
-    image.LoadFile("/home/x/msc/urbs/staticmap.png", wxBITMAP_TYPE_PNG);
-    margemEsquerda = -49.456909;
-	margemDireita = -49.097456;
-	margemSuperior = -25.218254;
-	margemInferior = -25.658483;
 
 	config.setLog(&log);
 	config.parse("urbs.cfg");
     RIT.Init(&config, &log);
     raioPonto=config.getInt(CONFIG_RAIO_PONTO, 2);
+    string mapa = config.get(CONFIG_IMAGEM_MAPA);
+    image.LoadFile(mapa, wxBITMAP_TYPE_PNG);
+
+    margemEsquerda = -49.456909;
+	margemDireita = -49.097456;
+	margemSuperior = -25.218254;
+	margemInferior = -25.658483;
+
+	coletaLinhas.setConfig(&config);
+	coletaLinhas.inicia();
 }
 
 
@@ -562,7 +549,6 @@ int MyFrame::converteY(double lon)
 }
 
 void MyFrame::OnMouse(wxMouseEvent& event) {
-	wxSize size = GetClientSize();
 	int x = event.GetX();
 	int y = event.GetY();
 

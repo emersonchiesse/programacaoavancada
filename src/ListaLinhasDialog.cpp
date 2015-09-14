@@ -79,7 +79,6 @@ void ListaLinhasDialog::OnVeiculos(wxCommandEvent& event) {
 
 	// lista veiculos da linha selecionada
 	string linha = s.SubString(0,2).ToStdString();
-	//lista.push_back(linha);
 
 	List<LocalVeiculo> *local = NULL;
 	bool achou = false;
@@ -99,7 +98,6 @@ void ListaLinhasDialog::OnVeiculos(wxCommandEvent& event) {
 				{
 					LocalVeiculo veic = (LocalVeiculo)(*it);
 					string p = veic.getPrefixo();
-					//cout << veic.getPrefixo() << endl;
 
 					vector<string>::iterator it2 =find (lista.begin(), lista.end(), p);
 					if (it2 == lista.end())
@@ -113,7 +111,7 @@ void ListaLinhasDialog::OnVeiculos(wxCommandEvent& event) {
 	if (!achou)
 		return;
 
-	ListaDialog dialog ( this, -1, s, //_("Veiculos"),
+	ListaDialog dialog ( this, -1, s,
 			&lista,
 			wxPoint(100, 100), wxSize(400, 400) );
 	dialog.ShowModal();

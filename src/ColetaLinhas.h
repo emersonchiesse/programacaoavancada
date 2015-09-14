@@ -13,9 +13,15 @@
 class ColetaLinhas : public Thread
 {
 private:
-	Linha linha;
+//	Linha linha
 
 	int agenda;
 
+public:
+	ColetaLinhas(): Thread () {
+		agenda = 0;
+	};
+
+	void executa ();
 };
 #endif
