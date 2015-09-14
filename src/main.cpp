@@ -36,6 +36,7 @@
 #include <wx/wx.h>
 #include "linhasDialog.h"
 #include "ListaDialog.h"
+#include "ListaLinhasDialog.h"
 #include "ConfigDialog.h"
 #include <string>
 #include <fstream>
@@ -318,10 +319,11 @@ void MyFrame::OnConfiguracoes (wxCommandEvent& event) {
 }
 
 void MyFrame::OnLinhasMostraLista(wxCommandEvent& event) {
-	vector<string> lista;
-			RIT.listaLinhas(&lista);
-    ListaDialog dialog ( this, -1, _("Linhas"),
-    		&lista,
+//	vector<string> lista;
+//	RIT.listaLinhas(&lista);
+	ListaLinhasDialog dialog ( this, -1, _("Linhas"),
+			RIT.getLinhas2(),
+			//&lista,
 			wxPoint(100, 100), wxSize(400, 400) );
 	dialog.ShowModal();
 }

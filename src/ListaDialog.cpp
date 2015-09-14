@@ -24,7 +24,6 @@
 using namespace std;
 
 BEGIN_EVENT_TABLE(ListaDialog, wxDialog)
-//  EVT_SIZE (PlanWindow::OnSize)       // Example size handler
 END_EVENT_TABLE();
 
 
@@ -45,7 +44,7 @@ ListaDialog::ListaDialog ( wxWindow * parent, wxWindowID id, const wxString & ti
 	p.x = 6; p.y = 2;
 
 	//dialogText = new wxTextCtrl ( this, -1, text, p, sz, wxTE_MULTILINE );
-	wxListBox * list = new wxListBox(this, -1, p, sz);
+	list = new wxListBox(this, -1, p, sz);
 
 
 	vector<string>::iterator i;

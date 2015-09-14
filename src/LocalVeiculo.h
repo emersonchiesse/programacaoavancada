@@ -52,5 +52,9 @@ public:
 	Coordenada* getCoordenada() {
 		return &coordenada;
 	}
+
+	std::string& getPrefixo(){
+		return prefixo;
+	}
 };
 #endif

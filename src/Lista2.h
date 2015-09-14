@@ -26,7 +26,9 @@ public:
 	void operator++(int){ pNode = pNode->_next; }
 	bool operator!=(Iterator<TNode> rval){ return !(pNode == rval.pNode); }
 	bool operator==(Iterator<TNode> rval){ return (pNode == rval.pNode); }
-	typename TNode::value_type operator*(){	return pNode->_data; }
+	typename TNode::value_type operator*(){
+		return pNode->_data;
+	}
 	Iterator<TNode> operator+(int _i)
 	{
 		Iterator<TNode> iter = *this;
@@ -78,7 +80,8 @@ public:
 			{
 				Node<T>* tmp = iter;
 				iter = iter->_next;
-				delete tmp;
+				if (tmp)
+					delete tmp;
 			}
 		}
 	}

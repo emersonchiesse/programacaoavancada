@@ -15,7 +15,6 @@
 using namespace std;
 
 BEGIN_EVENT_TABLE(LinhasDialog, wxDialog)
-//  EVT_SIZE (PlanWindow::OnSize)       // Example size handler
 END_EVENT_TABLE();
 
 
